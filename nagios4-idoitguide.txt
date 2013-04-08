@@ -1,0 +1,81 @@
+Nagios 4 idoit Guide
+#Default installation
+yum -y install httpd php perl net-snmp*  mysql-server libdbi-dbd-mysql libdbi-devel php-cli php-mysql gcc glibc glibc-common gd gd-devel openssl-devel perl-DBD-MySQL mysql-server mysql-devel php php-mysql php-gd php-ldap php-xml perl-DBI perl-DBD-MySQL perl-Config-IniFiles perl-rrdtool php-pear  make cairo-devel glib2-devel pango-devel openssl* rrdtool* php-gd gd gd-devel gd-progs wget MySQL-python gcc-c++ cairo-devel libxml2-devel pango-devel pango libpng-devel freetype freetype-devel libart_lgpl-devel perl-Crypt-DES perl-Digest-SHA1 perl-Digest-HMAC perl-Socket6 perl-IO-Socket-INET6 net-snmp net-snmp-libs php-snmp dmidecode lm_sensors perl-Net-SNMP net-snmp-perl fping graphviz cpp glib2-devel php-gd php-mysql php-ldap php-mbstring  postfix dovecot sharutils patch ruby ruby-devel rubygems
+
+Nagios 4 installation Pull from OP5 GIT
+NAGIOSPATH=/opt/nagios
+ADDONS=/opt/nagios/addons
+./configure --with-command-group=nagcmd --prefix=$NAGIOSPATH
+make all
+make install; make install-init; make install-config; make install-commandmode; make install-webconf; make install-devel
+
+Merlin Installation without error :)
+/etc/init.d/mysqld restart
+mysql -u root -e 'create database merlin'
+mysql -u root -e "grant all privileges on merlin.* to merlin@localhost identified by 'merlin'"
+mysql -u root -e 'flush privileges'
+make NAGIOS_PREFIX=/opt/nagios/
+./install-merlin.sh --nagios-cfg=/opt/nagios/etc/nagios.cfg --dest-dir=/opt/nagios/addons/merlin --batch
+
+Livestatus installation troublesome
+autoreconf -s
+automake --add-missing
+./configure CPPFLAGS=-I/opt/nagios/include --prefix=/opt/nagios/addons/livestatus && make
+sed -i '/file!!!/ a\broker_module=/opt/nagios/addons/livestatus/lib/mk-livestatus/livestatus.o /opt/nagios/var/rw/live' /opt/nagios/etc/nagios.cfg
+
+
+Ninja Installation 
+1. Download op5lib from http://git.op5.org/
+
+2. Run "make install", within the op5lib, which installs libraries used by
+   ninja, both for compilation and in runtime
+
+3. Make sure that all Ninja requirements are installed. Make sure op5lib is
+   located in the global PHP path, and that both the merlin and the livestatus
+   broker modules are loaded by nagios.
+
+4. Download ninja from http://git.op5.org/
+
+5. Within ninja directory, type "make". In case of depenceny issues with gems
+   and compass, follow the instructions in the terminal.
+
+6. Copy the ninja dir to a suitable location. Will vary between installations.
+mkdir /usr/local/nagios/addons/
+cp -a ninja /usr/local/nagios/addons/
+
+7. Configure your webserver. We provide an example config file for apache
+   located at ninja/op5build/ninja.httpd-conf. The example below works for
+   CentOS and RedHat
+vim ninja/op5build/ninja.httpd-conf
+cp ninja/op5build/ninja.httpd-conf /etc/httpd/conf.d
+service httpd restart
+
+8. Configure Ninja. An example config file exists in ninja/op5build/index.php,
+   edit the $ninja_base variable and copy it to the ninja root dir.
+
+vim ninja/op5build/index.php
+
+   $ninja_base = '/usr/local/nagios/addons/ninja';
+
+cp ninja/op5build/index.php ninja/
+
+   Edit the database connection settings and livestatus path in
+   ninja/application/config/database.php
+   There are more configuration files located in ninja/application/config/ but
+   you should normally not require to edit them.
+
+9. Setup the db tables required for Ninja by executing
+
+ninja/install_scripts/ninja_db_init.sh
+
+   This script will also try to import any existing htpasswd users from your
+   Nagios config.
+
+10.Configure /etc/op5/*.yml files; livestatus.yml should point to your
+   livestatus socket. Look at the other files so they match your system.
+
+12.Point your browser to https://yourip/ninja and try your installation with
+   default user "monitor" and password "monitor"
+
+13.Use "op5-manage-users" to manage additional user accounts.
+
