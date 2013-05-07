@@ -1,7 +1,7 @@
 Nagios 4 idoit Guide
 #Default installation
 yum -y install httpd php perl net-snmp*  mysql-server libdbi-dbd-mysql libdbi-devel php-cli php-mysql gcc glibc glibc-common gd gd-devel openssl-devel perl-DBD-MySQL mysql-server mysql-devel php php-mysql php-gd php-ldap php-xml perl-DBI perl-DBD-MySQL perl-Config-IniFiles perl-rrdtool php-pear  make cairo-devel glib2-devel pango-devel openssl* rrdtool* php-gd gd gd-devel gd-progs wget MySQL-python gcc-c++ cairo-devel libxml2-devel pango-devel pango libpng-devel freetype freetype-devel libart_lgpl-devel perl-Crypt-DES perl-Digest-SHA1 perl-Digest-HMAC perl-Socket6 perl-IO-Socket-INET6 net-snmp net-snmp-libs php-snmp dmidecode lm_sensors perl-Net-SNMP net-snmp-perl fping graphviz cpp glib2-devel php-gd php-mysql php-ldap php-mbstring  postfix dovecot sharutils patch ruby ruby-devel rubygems
-
+yum install ruby ruby-rdoc ruby-devel  rubygems -y
 Nagios 4 installation Pull from OP5 GIT
 NAGIOSPATH=/opt/nagios
 ADDONS=/opt/nagios/addons
@@ -16,17 +16,33 @@ mysql -u root -e "grant all privileges on merlin.* to merlin@localhost identifie
 mysql -u root -e 'flush privileges'
 make NAGIOS_PREFIX=/opt/nagios/
 ./install-merlin.sh --nagios-cfg=/opt/nagios/etc/nagios.cfg --dest-dir=/opt/nagios/addons/merlin --batch
+sed -i 's&/opt/monitor&/opt/nagios&g' /usr/bin/mon
+cd /usr/libexec/merlin/mon
+sed -i 's&/opt/monitor&/opt/nagios&g' qh.py
+sed -i 's&/opt/monitor&/opt/nagios&g' check.py
+sed -i 's&/opt/nagios/op5&/opt/nagios/addons&g' check.py
+sed -i 's&/opt/monitor&/opt/nagios&g' node.py
+sed -i 's&/opt/monitor/op5&/opt/nagios/addons&g' *.py
+sed -i 's&/opt/monitor&/opt/nagios&g' *.py
+sed -i 's&/opt/nagios/addons/livestatus/livestatus.o&/opt/nagios/addons/livestatus/lib/mk-livestatus/livestatus.o&g' *.py
+cd /usr/libexec/merlin/mon/modules
+sed -i 's&/opt/monitor/op5&/opt/nagios/addons&g' *.py
+sed -i 's&/opt/monitor&/opt/nagios&g' *.py
+sed -i 's&/opt/nagios/addons/livestatus/livestatus.o&/opt/nagios/addons/livestatus/lib/mk-livestatus/livestatus.o&g' *.py
+cd /opt/nagios/bin
+ln -s nagios monitor
 
 Livestatus installation troublesome
 autoreconf -s
 automake --add-missing
-./configure CPPFLAGS=-I/opt/nagios/include --prefix=/opt/nagios/addons/livestatus && make
+./configure CPPFLAGS=-I/opt/nagios/include --prefix=/opt/nagios/addons/livestatus && make && make install
 sed -i '/file!!!/ a\broker_module=/opt/nagios/addons/livestatus/lib/mk-livestatus/livestatus.o /opt/nagios/var/rw/live' /opt/nagios/etc/nagios.cfg
 
 
 Ninja Installation 
 1. Download op5lib from http://git.op5.org/
-
+sed -i 's&/opt/monitor&/opt/nagios&g' *.yml
+gem install compass
 2. Run "make install", within the op5lib, which installs libraries used by
    ninja, both for compilation and in runtime
 
@@ -79,3 +95,8 @@ ninja/install_scripts/ninja_db_init.sh
 
 13.Use "op5-manage-users" to manage additional user accounts.
 
+wkhtmlpdf
+# wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.9.9-static-amd64.tar.bz2
+# tar xvjf wkhtmltopdf-0.9.9-static-amd64.tar.bz2
+# mv wkhtmltopdf-amd64 /usr/bin/wkhtmltopdf
+#chmod 777 /usr/bin/wkhtmltopdf
