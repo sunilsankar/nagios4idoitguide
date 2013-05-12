@@ -36,7 +36,7 @@ Livestatus installation troublesome
 autoreconf -s
 automake --add-missing
 ./configure CPPFLAGS=-I/opt/nagios/include --prefix=/opt/nagios/addons/livestatus && make && make install
-sed -i '/file!!!/ a\broker_module=/opt/nagios/addons/livestatus/lib/mk-livestatus/livestatus.o /opt/nagios/var/rw/live' /opt/nagios/etc/nagios.cfg
+sed -i '/file!!!/ a\broker_module=/opt/nagios/addons/livestatus/lib/mk-livestatus/livestatus.o pnp_path=/opt/nagios/addons/pnp/var/perfdata /opt/nagios/var/rw/live' /opt/nagios/etc/nagios.cfg
 
 
 Ninja Installation 
