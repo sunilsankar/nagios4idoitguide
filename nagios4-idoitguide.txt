@@ -95,6 +95,11 @@ ninja/install_scripts/ninja_db_init.sh
 
 13.Use "op5-manage-users" to manage additional user accounts.
 
+
+cd /opt/nagios/addons/ninja
+sed -i 's&/monitor/application/views/icons/16x16/save_search.png&/ninja/application/views/icons/16x16/save_search.png&g' application/views/template_header.php
+
+
 wkhtmlpdf
 # wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.9.9-static-amd64.tar.bz2
 # tar xvjf wkhtmltopdf-0.9.9-static-amd64.tar.bz2
